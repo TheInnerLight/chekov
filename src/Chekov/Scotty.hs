@@ -3,13 +3,15 @@ module Chekov.Scotty
   ) where
 
 import Control.Monad
+import Control.Monad.IO.Class
 import Chekov
 import Network.Wai
 import Network.HTTP.Types.Status
 import Network.HTTP.Types.Method
-import Web.Scotty
+import Web.Scotty.Trans
+import Web.Scotty.Internal.Types
 
-runPartialRoute :: Path a (ActionM ()) -> StdMethod -> a -> ActionM (Maybe ())
+runPartialRoute :: (ScottyError e, Monad m) => Path a (ActionT e m ()) -> StdMethod -> a -> ActionT e m (Maybe ())
 runPartialRoute p method act = do
   req <- request
   let reqPath = pathInfo req
@@ -23,12 +25,13 @@ runPartialRoute p method act = do
       else do
         _ <- status methodNotAllowed405
         return Nothing
-    Nothing      -> return Nothing
+    Nothing -> 
+      return Nothing
 
-runRoutes :: [Route (ActionM ())] -> ScottyM ()
+runRoutes :: (ScottyError e, MonadIO m) => [Route (ActionT e m ())] -> ScottyT e m ()
 runRoutes rs = 
-  notFound $ fmap (const ()) $ foldM folder Nothing rs
+  notFound $ foldM_ folder Nothing rs
   where 
-    folder :: Maybe () -> Route (ActionM ()) -> ActionM (Maybe ())
+    folder :: (ScottyError e, MonadIO m) => Maybe () -> Route (ActionT e m ()) -> ActionT e m (Maybe ())
     folder Nothing (Route p m act) = runPartialRoute p m act
     folder (Just ()) _ = return $ Just ()

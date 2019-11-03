@@ -20,22 +20,22 @@ class PathComponent a where
   parse :: Text -> Maybe a
 
 instance PathComponent Text where
-  parse = Just . id
+  parse = Just
 
 instance PathComponent Int where
   parse = readMaybe . unpack
 
 constantPath :: Text -> Path a a
-constantPath str = ConstantPath str
+constantPath = ConstantPath
 
 var :: PathComponent a => Path (a -> b) b
-var = ParsePath (parse)
+var = ParsePath parse
 
 (//) :: Path a c -> Path c b -> Path a b
-(//) p1 p2 = CombinePath p1 p2
+(//) = CombinePath
 
 makeRoute :: Path a r -> StdMethod -> a -> Route r
-makeRoute p method x = Route p method x
+makeRoute = Route
 
 runPath :: Path a b -> [Text] -> a -> Maybe (b, [Text])
 runPath (ParsePath p) [] f =

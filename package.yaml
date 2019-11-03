@@ -26,6 +26,7 @@ dependencies:
 - text
 - http-types
 - monad-loops
+- transformers
 
 library:
   source-dirs: src

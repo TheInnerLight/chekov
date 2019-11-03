@@ -9,7 +9,7 @@ import Data.Monoid (mconcat)
 import Network.HTTP.Types.Method
 
 main :: IO ()
-main = scotty 3000 $ do
+main = scotty 3000 $
   runRoutes $ [
       makeRoute (constantPath "transport" // var) GET $ \(target :: Text) -> 
         html $ mconcat ["<h1>Scotty, beam up ", fromStrict target,  "!</h1>"]
